@@ -41,7 +41,7 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
     boolean ignoreFailures
     boolean testFailed
 
-    Map instrumentationOptions;
+    Map<String, String> instrumentationOptions;
 
     @TaskAction
     protected void runTests() {
@@ -65,6 +65,7 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
             success = testRunner.runTests(project.name, flavor,
                     testApk, testedApk, variant.variantConfiguration,
                     deviceProvider.devices,
+                    Collections.emptyList(), Collections.emptyList(),
                     deviceProvider.getMaxThreads(),
                     deviceProvider.getTimeout(),
                     resultsOutDir, plugin.logger);

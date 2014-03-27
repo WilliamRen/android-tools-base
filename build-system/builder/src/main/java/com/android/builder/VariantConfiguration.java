@@ -47,7 +47,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -870,7 +869,11 @@ public class VariantConfiguration implements TestData {
     @NonNull
     public Map<String, String> getInstrumentationOptions() {
         VariantConfiguration config = this;
+        if (mType == Type.TEST) {
+            config = getTestedConfig();
+        }
         Map<String, String> options = config.mMergedFlavor.getInstrumentationOptions();
+        System.out.println(config.mMergedFlavor.getInstrumentationOptions());
         return options != null ? options : Collections.EMPTY_MAP;
     }
 

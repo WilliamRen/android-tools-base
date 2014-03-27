@@ -49,6 +49,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
     private String mPackageName = null;
     private String mTestPackageName = null;
     private String mTestInstrumentationRunner = null;
+    private Map<String, String> mInstrumentationOptions = null;
     private Boolean mTestHandleProfiling = null;
     private Boolean mTestFunctionalTest = null;
     private Set<String> mResourceConfigurations = null;
@@ -145,7 +146,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
 
     @NonNull
     @Override
-    public Map<String, String> getInstrumentationOptions() { return Collections.emptyMap(); }
+    public Map<String, String> getInstrumentationOptions() { return mInstrumentationOptions; }
 
     @Nullable
     @Override
