@@ -21,15 +21,12 @@ import com.android.annotations.Nullable;
 import com.android.builder.model.ClassField;
 import com.android.builder.model.NdkConfig;
 import com.android.builder.model.ProductFlavor;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of ProductFlavor that is serializable. Objects used in the DSL cannot be
@@ -49,6 +46,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
     private String mPackageName = null;
     private String mTestPackageName = null;
     private String mTestInstrumentationRunner = null;
+    private Map<String, String> mInstrumentationOptions = Collections.EMPTY_MAP;
     private Boolean mTestHandleProfiling = null;
     private Boolean mTestFunctionalTest = null;
     private Set<String> mResourceConfigurations = null;
@@ -71,6 +69,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
 
         clonedFlavor.mTestPackageName = productFlavor.getTestPackageName();
         clonedFlavor.mTestInstrumentationRunner = productFlavor.getTestInstrumentationRunner();
+        clonedFlavor.mInstrumentationOptions = ImmutableMap.copyOf(productFlavor.getInstrumentationOptions());
         clonedFlavor.mTestHandleProfiling = productFlavor.getTestHandleProfiling();
         clonedFlavor.mTestFunctionalTest = productFlavor.getTestFunctionalTest();
 
@@ -145,7 +144,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
 
     @NonNull
     @Override
-    public Map<String, String> getInstrumentationOptions() { return Collections.emptyMap(); }
+    public Map<String, String> getInstrumentationOptions() { return mInstrumentationOptions; }
 
     @Nullable
     @Override

@@ -23,13 +23,10 @@ import com.android.builder.model.NdkConfig;
 import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SigningConfig;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The configuration of a product flavor.
@@ -56,7 +53,7 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
     private SigningConfig mSigningConfig = null;
     private Set<String> mResourceConfiguration = null;
 
-    private Map<String, String> mInstrumentationOptions;
+    private Map<String, String> mInstrumentationOptions = Collections.EMPTY_MAP;
 
     /**
      * Creates a ProductFlavor with a given name.
@@ -316,6 +313,10 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
         flavor.mTestInstrumentationRunner = chooseString(mTestInstrumentationRunner,
                 base.mTestInstrumentationRunner);
 
+        Map<String, String> options = new HashMap<String, String>(mInstrumentationOptions);
+        options.putAll(base.mInstrumentationOptions);
+        flavor.mInstrumentationOptions = ImmutableMap.copyOf(options);
+
         flavor.mTestHandleProfiling = chooseBoolean(mTestHandleProfiling,
                 base.mTestHandleProfiling);
 
@@ -373,6 +374,9 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
             return false;
         if (mTestInstrumentationRunner != null ? !mTestInstrumentationRunner.equals(that.mTestInstrumentationRunner) : that.mTestInstrumentationRunner != null)
             return false;
+        if (mInstrumentationOptions != null ? !mInstrumentationOptions
+                .equals(that.mInstrumentationOptions) : that.mInstrumentationOptions != null)
+            return false;
         if (mTestPackageName != null ? !mTestPackageName.equals(that.mTestPackageName) : that.mTestPackageName != null)
             return false;
         if (mVersionName != null ? !mVersionName.equals(that.mVersionName) : that.mVersionName != null)
@@ -395,6 +399,7 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
         result = 31 * result + (mPackageName != null ? mPackageName.hashCode() : 0);
         result = 31 * result + (mTestPackageName != null ? mTestPackageName.hashCode() : 0);
         result = 31 * result + (mTestInstrumentationRunner != null ? mTestInstrumentationRunner.hashCode() : 0);
+        result = 31 * result + (mInstrumentationOptions != null ? mInstrumentationOptions.hashCode() : 0);
         result = 31 * result + (mTestHandleProfiling != null ? mTestHandleProfiling.hashCode() : 0);
         result = 31 * result + (mTestFunctionalTest != null ? mTestFunctionalTest.hashCode() : 0);
         result = 31 * result + (mSigningConfig != null ? mSigningConfig.hashCode() : 0);
@@ -417,6 +422,7 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
                 .add("packageName", mPackageName)
                 .add("testPackageName", mTestPackageName)
                 .add("testInstrumentationRunner", mTestInstrumentationRunner)
+                .add("instrumentationOptions", mInstrumentationOptions)
                 .add("testHandleProfiling", mTestHandleProfiling)
                 .add("testFunctionalTest", mTestFunctionalTest)
                 .add("signingConfig", mSigningConfig)

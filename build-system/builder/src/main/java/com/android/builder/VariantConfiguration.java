@@ -16,9 +16,6 @@
 
 package com.android.builder;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
@@ -27,30 +24,19 @@ import com.android.builder.dependency.JarDependency;
 import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.internal.MergedNdkConfig;
 import com.android.builder.internal.StringHelper;
-import com.android.builder.model.BaseConfig;
-import com.android.builder.model.ClassField;
-import com.android.builder.model.NdkConfig;
-import com.android.builder.model.ProductFlavor;
-import com.android.builder.model.SigningConfig;
-import com.android.builder.model.SourceProvider;
+import com.android.builder.model.*;
 import com.android.builder.testing.TestData;
 import com.android.ide.common.res2.AssetSet;
 import com.android.ide.common.res2.ResourceSet;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * A Variant configuration.
@@ -870,6 +856,9 @@ public class VariantConfiguration implements TestData {
     @NonNull
     public Map<String, String> getInstrumentationOptions() {
         VariantConfiguration config = this;
+        if (mType == Type.TEST) {
+            config = getTestedConfig();
+        }
         Map<String, String> options = config.mMergedFlavor.getInstrumentationOptions();
         return options != null ? options : Collections.EMPTY_MAP;
     }
