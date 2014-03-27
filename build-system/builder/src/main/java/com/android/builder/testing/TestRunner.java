@@ -18,6 +18,7 @@ package com.android.builder.testing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.builder.testing.api.DeviceAction;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.TestException;
 import com.android.utils.ILogger;
@@ -57,6 +58,8 @@ public interface TestRunner {
             @Nullable File testedApk,
             @NonNull  TestData testData,
             @NonNull  List<? extends DeviceConnector> deviceList,
+            @NonNull  List<DeviceAction> prepareDevice,
+            @NonNull  List<DeviceAction> scrubDevice,
                       int maxThreads,
                       int timeout,
             @NonNull  File resultsDir,

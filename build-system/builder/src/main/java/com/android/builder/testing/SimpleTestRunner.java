@@ -19,6 +19,7 @@ package com.android.builder.testing;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.internal.testing.SimpleTestCallable;
+import com.android.builder.testing.api.DeviceAction;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.TestException;
 import com.android.ide.common.internal.WaitableExecutor;
@@ -41,6 +42,8 @@ public class SimpleTestRunner implements TestRunner {
             @Nullable File testedApk,
             @NonNull  TestData testData,
             @NonNull  List<? extends DeviceConnector> deviceList,
+            @NonNull  List<DeviceAction> prepareDevice,
+            @NonNull  List<DeviceAction> scrubDevice,
                       int maxThreads,
                       int timeout,
             @NonNull  File resultsDir,
@@ -52,7 +55,7 @@ public class SimpleTestRunner implements TestRunner {
             if (filterOutDevice(device, testData, logger, projectName, variantName)) {
                 executor.execute(new SimpleTestCallable(device, projectName, variantName,
                         testApk, testedApk, testData,
-                        resultsDir, timeout, logger));
+                        resultsDir, prepareDevice, scrubDevice, timeout, logger));
             }
         }
 

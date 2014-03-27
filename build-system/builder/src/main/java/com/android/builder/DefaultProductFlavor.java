@@ -27,6 +27,8 @@ import com.google.common.collect.Sets;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -53,6 +55,8 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
     private Boolean mTestFunctionalTest = null;
     private SigningConfig mSigningConfig = null;
     private Set<String> mResourceConfiguration = null;
+
+    private Map<String, String> mInstrumentationOptions;
 
     /**
      * Creates a ProductFlavor with a given name.
@@ -199,6 +203,16 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
     public String getTestInstrumentationRunner() {
         return mTestInstrumentationRunner;
     }
+
+    @NonNull
+    public ProductFlavor setInstrumentationOptions( Map<String, String> options) {
+        mInstrumentationOptions = Collections.unmodifiableMap(options);
+        return this;
+    }
+
+    @Override
+    @NonNull
+    public Map<String, String> getInstrumentationOptions() { return mInstrumentationOptions; }
 
     @Override
     @Nullable

@@ -47,6 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -863,6 +864,14 @@ public class VariantConfiguration implements TestData {
         }
         String runner = config.mMergedFlavor.getTestInstrumentationRunner();
         return runner != null ? runner : DEFAULT_TEST_RUNNER;
+    }
+
+    @Override
+    @NonNull
+    public Map<String, String> getInstrumentationOptions() {
+        VariantConfiguration config = this;
+        Map<String, String> options = config.mMergedFlavor.getInstrumentationOptions();
+        return options != null ? options : Collections.EMPTY_MAP;
     }
 
     /**

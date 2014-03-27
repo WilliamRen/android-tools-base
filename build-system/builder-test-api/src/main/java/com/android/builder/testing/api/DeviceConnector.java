@@ -23,6 +23,7 @@ import com.android.utils.ILogger;
 import com.google.common.annotations.Beta;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -79,4 +80,7 @@ public abstract class DeviceConnector implements IShellEnabledDevice {
     public abstract int getHeight();
 
     public abstract int getWidth();
+
+    public abstract void pullFile(String remote, String local) throws IOException;
+
 }

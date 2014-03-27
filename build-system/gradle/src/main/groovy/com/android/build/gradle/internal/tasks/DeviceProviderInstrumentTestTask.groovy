@@ -41,6 +41,8 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
     boolean ignoreFailures
     boolean testFailed
 
+    Map instrumentationOptions;
+
     @TaskAction
     protected void runTests() {
         assert variant instanceof TestVariantData
