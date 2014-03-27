@@ -143,6 +143,10 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
         return mTestInstrumentationRunner;
     }
 
+    @NonNull
+    @Override
+    public Map<String, String> getInstrumentationOptions() { return Collections.emptyMap(); }
+
     @Nullable
     @Override
     public Boolean getTestHandleProfiling() {
