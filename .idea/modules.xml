@@ -4,10 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/adt.iml" filepath="$PROJECT_DIR$/adt.iml" />
       <module fileurl="file://$PROJECT_DIR$/legacy/ant-tasks/ant-tasks.iml" filepath="$PROJECT_DIR$/legacy/ant-tasks/ant-tasks.iml" />
-      <module fileurl="file://$PROJECT_DIR$/legacy/archquery/archquery.iml" filepath="$PROJECT_DIR$/legacy/archquery/archquery.iml" />
-      <module fileurl="file://$PROJECT_DIR$/asset-studio/asset-studio.iml" filepath="$PROJECT_DIR$/asset-studio/asset-studio.iml" />
       <module fileurl="file://$PROJECT_DIR$/asset-studio/assetstudio.iml" filepath="$PROJECT_DIR$/asset-studio/assetstudio.iml" />
-      <module fileurl="file://$PROJECT_DIR$/base.iml" filepath="$PROJECT_DIR$/base.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/builder/builder.iml" filepath="$PROJECT_DIR$/build-system/builder/builder.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/builder-model/builder-model.iml" filepath="$PROJECT_DIR$/build-system/builder-model/builder-model.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/builder-test-api/builder-test-api.iml" filepath="$PROJECT_DIR$/build-system/builder-test-api/builder-test-api.iml" />
@@ -15,13 +12,10 @@
       <module fileurl="file://$PROJECT_DIR$/ddmlib/ddmlib.iml" filepath="$PROJECT_DIR$/ddmlib/ddmlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/draw9patch/draw9patch.iml" filepath="$PROJECT_DIR$/draw9patch/draw9patch.iml" />
       <module fileurl="file://$PROJECT_DIR$/device_validator/dvlib/dvlib.iml" filepath="$PROJECT_DIR$/device_validator/dvlib/dvlib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../external/fat32lib/fat32lib.iml" filepath="$PROJECT_DIR$/../external/fat32lib/fat32lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/gradle/gradle.iml" filepath="$PROJECT_DIR$/build-system/gradle/gradle.iml" />
       <module fileurl="file://$PROJECT_DIR$/gradle-import/gradle-import.iml" filepath="$PROJECT_DIR$/gradle-import/gradle-import.iml" />
       <module fileurl="file://$PROJECT_DIR$/build-system/gradle-model/gradle-model.iml" filepath="$PROJECT_DIR$/build-system/gradle-model/gradle-model.iml" />
-      <module fileurl="file://$PROJECT_DIR$/jobb/jobb.iml" filepath="$PROJECT_DIR$/jobb/jobb.iml" />
       <module fileurl="file://$PROJECT_DIR$/layoutlib-api/layoutlib-api.iml" filepath="$PROJECT_DIR$/layoutlib-api/layoutlib-api.iml" />
-      <module fileurl="file://$PROJECT_DIR$/lint/cli/lint.iml" filepath="$PROJECT_DIR$/lint/cli/lint.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-api/lint-api.iml" filepath="$PROJECT_DIR$/lint/libs/lint-api/lint-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/libs/lint-checks/lint-checks.iml" filepath="$PROJECT_DIR$/lint/libs/lint-checks/lint-checks.iml" />
       <module fileurl="file://$PROJECT_DIR$/lint/cli/lint-cli.iml" filepath="$PROJECT_DIR$/lint/cli/lint-cli.iml" />
@@ -29,10 +23,8 @@
       <module fileurl="file://$PROJECT_DIR$/ninepatch/ninepatch.iml" filepath="$PROJECT_DIR$/ninepatch/ninepatch.iml" />
       <module fileurl="file://$PROJECT_DIR$/perflib/perflib.iml" filepath="$PROJECT_DIR$/perflib/perflib.iml" />
       <module fileurl="file://$PROJECT_DIR$/rule-api/rule-api.iml" filepath="$PROJECT_DIR$/rule-api/rule-api.iml" />
-      <module fileurl="file://$PROJECT_DIR$/misc/screenshot2/screenshot2.iml" filepath="$PROJECT_DIR$/misc/screenshot2/screenshot2.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdk-common/sdk-common.iml" filepath="$PROJECT_DIR$/sdk-common/sdk-common.iml" />
       <module fileurl="file://$PROJECT_DIR$/sdklib/sdklib.iml" filepath="$PROJECT_DIR$/sdklib/sdklib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/sdklib/sdklib-test.iml" filepath="$PROJECT_DIR$/sdklib/sdklib-test.iml" />
       <module fileurl="file://$PROJECT_DIR$/testutils/testutils.iml" filepath="$PROJECT_DIR$/testutils/testutils.iml" />
     </modules>
   </component>
