@@ -116,7 +116,6 @@ public class SimpleTestCallable implements Callable<Boolean> {
                 action.apply(device);
             }
 
-            logger.info("Instrumentation info %s", testData.getInstrumentationOptions());
             RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
                     testData.getPackageName(),
                     testData.getInstrumentationRunner(),
