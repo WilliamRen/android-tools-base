@@ -16,8 +16,10 @@
 
 package com.android.manifmerger;
 
+import com.android.SdkConstants;
 import com.android.utils.StdLogger;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import junit.framework.TestCase;
@@ -62,7 +64,7 @@ public class XmlElementTest extends TestCase {
                 + "         tools:node=\"removeAll\"/>\n"
                 + "\n"
                 + "    <activity android:name=\"activityThree\" "
-                + "         tools:node=\"removeChildren\"/>\n"
+                + "         tools:node=\"mergeOnlyAttributes\"/>\n"
                 + "\n"
                 + "</manifest>";
 
@@ -81,7 +83,7 @@ public class XmlElementTest extends TestCase {
         activity = xmlDocument.getRootNode().getNodeByTypeAndKey(
                 ManifestModel.NodeTypes.ACTIVITY, "com.example.lib3.activityThree");
         assertTrue(activity.isPresent());
-        assertEquals(NodeOperationType.REMOVE_CHILDREN,
+        assertEquals(NodeOperationType.MERGE_ONLY_ATTRIBUTES,
                 activity.get().getOperationType());
     }
 
@@ -318,7 +320,7 @@ public class XmlElementTest extends TestCase {
                 "com.example.lib3.activityOne").get()
                 .compareTo(otherDocument.getRootNode().getNodeByTypeAndKey(
                         ManifestModel.NodeTypes.ACTIVITY, "com.example.lib3.activityOne")
-                                .get()).isPresent());
+                        .get()).isPresent());
     }
 
     public void testDiff2()
@@ -395,7 +397,8 @@ public class XmlElementTest extends TestCase {
                 .compareTo(
                         otherDocument.getRootNode().getNodeByTypeAndKey(
                                 ManifestModel.NodeTypes.ACTIVITY, "com.example.lib3.activityOne")
-                                .get()).isPresent());
+                                .get()
+                ).isPresent());
     }
 
     public void testDiff4()
@@ -432,7 +435,8 @@ public class XmlElementTest extends TestCase {
                 .compareTo(
                         otherDocument.getRootNode().getNodeByTypeAndKey(
                                 ManifestModel.NodeTypes.ACTIVITY, "com.example.lib3.activityOne")
-                                .get()).isPresent());
+                                .get()
+                ).isPresent());
     }
 
     public void testDiff5()
@@ -508,7 +512,8 @@ public class XmlElementTest extends TestCase {
                                 otherDocument.getRootNode().getNodeByTypeAndKey(
                                         ManifestModel.NodeTypes.ACTIVITY,
                                         "com.example.lib3.activityOne")
-                                        .get()).isPresent()
+                                        .get()
+                        ).isPresent()
         );
     }
 
@@ -1336,5 +1341,309 @@ public class XmlElementTest extends TestCase {
         ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
                 .getMergeableElements();
         assertEquals(1, mergeableElements.size());
+    }
+
+    /**
+     * test tools:node="removeAll" with several target elements to be removed.
+     */
+    public void testMergeOnlyAttributes()
+            throws ParserConfigurationException, SAXException, IOException {
+        String higherPriority = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib3\">\n"
+                + "\n"
+                + "    <activity android:name=\"activityOne\" "
+                + "         android:exported=\"true\""
+                + "         tools:node=\"mergeOnlyAttributes\">\n"
+                + "       <meta-data android:name=\"bird\" android:value=\"@string/hawk\" />\n"
+                + "    </activity>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriority = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib3\">\n"
+                + "\n"
+                + "    <activity android:name=\"activityOne\"\n"
+                + "         android:screenOrientation=\"landscape\">\n"
+                + "       <meta-data android:name=\"dog\" android:value=\"@string/dog\" />\n"
+                + "    </activity>\n"
+                + "\n"
+                + "</manifest>";
+
+        XmlDocument refDocument = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "higherPriority"), higherPriority);
+        XmlDocument otherDocument = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriority"), lowerPriority);
+
+        MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
+                new StdLogger(StdLogger.Level.VERBOSE));
+        Optional<XmlDocument> result = refDocument.merge(otherDocument, mergingReportBuilder);
+        assertTrue(result.isPresent());
+
+        Optional<XmlElement> activityOne = result.get().getRootNode().getNodeByTypeAndKey(
+                ManifestModel.NodeTypes.ACTIVITY, "com.example.lib3.activityOne");
+        assertTrue(activityOne.isPresent());
+
+        assertEquals(1, activityOne.get().getMergeableElements().size());
+        assertEquals(3, activityOne.get().getAttributes().size());
+
+        // check that we kept the right child from the higher priority node.
+        XmlNode.NodeName nodeName = XmlNode.fromXmlName(
+                SdkConstants.ANDROID_NS_NAME_PREFIX + SdkConstants.ATTR_NAME);
+        assertEquals("bird", activityOne.get().getMergeableElements().get(0)
+                .getAttribute(nodeName).get().getValue());
+
+        // check the records.
+        ActionRecorder actionRecorder = mergingReportBuilder.getActionRecorder().build();
+        assertEquals(3, actionRecorder.getAllRecords().size());
+        ActionRecorder.DecisionTreeRecord decisionTreeRecord = actionRecorder.getAllRecords()
+                .get("activity#com.example.lib3.activityOne");
+        for (int i = 0; i < decisionTreeRecord.getNodeRecords().size(); i++) {
+            ActionRecorder.NodeRecord nodeRecord = decisionTreeRecord.getNodeRecords().get(i);
+            if ("meta-data#dog".equals(nodeRecord.getTargetId())) {
+                assertEquals(ActionRecorder.ActionType.REJECTED,
+                        nodeRecord.getActionType());
+                return;
+            }
+        }
+        fail("Did not find the meta-data rejection record");
+    }
+
+    /**
+     * test tools:node="removeAll" with several target elements to be removed.
+     */
+    public void testRemove_withSelector()
+            throws ParserConfigurationException, SAXException, IOException {
+        String higherPriority = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib3\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionOne\""
+                + "          tools:node=\"remove\""
+                + "          tools:selector=\"com.example.lib1\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriorityOne = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib1\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionOne\""
+                + "             android:protectionLevel=\"signature\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriorityTwo = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib2\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionOne\""
+                + "             android:protectionLevel=\"normal\">\n"
+                + "    </permission>\n"
+                + "    <permission android:name=\"permissionTwo\""
+                + "             android:protectionLevel=\"normal\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        XmlDocument refDocument = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "higherPriority"), higherPriority);
+        XmlDocument firstLibrary = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriorityOne"), lowerPriorityOne);
+        XmlDocument secondLibrary = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriorityTwo"), lowerPriorityTwo);
+
+        MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
+                new StdLogger(StdLogger.Level.VERBOSE));
+        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        assertTrue(result.isPresent());
+        result = result.get().merge(secondLibrary, mergingReportBuilder);
+        assertTrue(result.isPresent());
+
+        ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
+                .getMergeableElements();
+        assertEquals(2, mergeableElements.size());
+    }
+
+    /**
+     * test tools:node="removeAll" with several target elements to be removed.
+     */
+    public void testRemoveAll_withSelector()
+            throws ParserConfigurationException, SAXException, IOException {
+        String higherPriority = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib3\">\n"
+                + "\n"
+                + "    <permission"
+                + "          tools:node=\"removeAll\"\n"
+                + "          tools:selector=\"com.example.lib1\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriorityOne = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib1\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionOne\""
+                + "             android:protectionLevel=\"signature\">\n"
+                + "    </permission>\n"
+                + "    <permission android:name=\"permissionTwo\""
+                + "             android:protectionLevel=\"signature\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriorityTwo = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib2\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionThree\""
+                + "             android:protectionLevel=\"normal\">\n"
+                + "    </permission>\n"
+                + "    <permission android:name=\"permissionFour\""
+                + "             android:protectionLevel=\"normal\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        XmlDocument refDocument = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "higherPriority"), higherPriority);
+        XmlDocument firstLibrary = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriorityOne"), lowerPriorityOne);
+        XmlDocument secondLibrary = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriorityTwo"), lowerPriorityTwo);
+
+        MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
+                new StdLogger(StdLogger.Level.VERBOSE));
+        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        assertTrue(result.isPresent());
+        result = result.get().merge(secondLibrary, mergingReportBuilder);
+        assertTrue(result.isPresent());
+
+        ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
+                .getMergeableElements();
+        assertEquals(3, mergeableElements.size());
+        XmlNode.NodeName nodeName = XmlNode.fromXmlName("android:name");
+        assertEquals("permissionThree",
+                mergeableElements.get(1).getAttribute(nodeName).get().getValue());
+        assertEquals("permissionFour",
+                mergeableElements.get(2).getAttribute(nodeName).get().getValue());
+    }
+
+    /**
+     * test tools:node="removeAll" with several target elements to be removed.
+     */
+    public void testRemoveAndRemoveAll_withReplace()
+            throws ParserConfigurationException, SAXException, IOException {
+        String higherPriority = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib3\">\n"
+                + "\n"
+                + "    <permission"
+                + "          android:name=\"permissionOne\"\n"
+                + "          tools:node=\"remove\"\n"
+                + "          tools:selector=\"com.example.lib1\">\n"
+                + "    </permission>\n"
+                + "    <permission"
+                + "          tools:node=\"removeAll\"\n"
+                + "          tools:selector=\"com.example.lib3\">\n"
+                + "    </permission>\n"
+                + "    <permission android:name=\"permissionThree\""
+                + "             android:protectionLevel=\"signature\""
+                + "             tools:node=\"replace\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriorityOne = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib1\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionOne\""
+                + "             android:protectionLevel=\"signature\">\n"
+                + "    </permission>\n"
+                + "    <permission android:name=\"permissionTwo\""
+                + "             android:protectionLevel=\"signature\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        String lowerPriorityTwo = ""
+                + "<manifest\n"
+                + "    xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
+                + "    xmlns:tools=\"http://schemas.android.com/tools\"\n"
+                + "    package=\"com.example.lib2\">\n"
+                + "\n"
+                + "    <permission android:name=\"permissionThree\""
+                + "             android:protectionLevel=\"normal\">\n"
+                + "    </permission>\n"
+                + "    <permission android:name=\"permissionFour\""
+                + "             android:protectionLevel=\"normal\">\n"
+                + "    </permission>\n"
+                + "\n"
+                + "</manifest>";
+
+        XmlDocument refDocument = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "higherPriority"), higherPriority);
+        XmlDocument firstLibrary = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriorityOne"), lowerPriorityOne);
+        XmlDocument secondLibrary = TestUtils.xmlDocumentFromString(
+                new TestUtils.TestSourceLocation(getClass(), "lowerPriorityTwo"), lowerPriorityTwo);
+
+        MergingReport.Builder mergingReportBuilder = new MergingReport.Builder(
+                new StdLogger(StdLogger.Level.VERBOSE));
+        Optional<XmlDocument> result = refDocument.merge(firstLibrary, mergingReportBuilder);
+        assertTrue(result.isPresent());
+        result = result.get().merge(secondLibrary, mergingReportBuilder);
+        assertTrue(result.isPresent());
+
+        ImmutableList<XmlElement> mergeableElements = result.get().getRootNode()
+                .getMergeableElements();
+        // I should have permissionTwo, permissionThree (replaced), permissionFour
+        // + remove and removeAll not cleaned
+        assertEquals(5, mergeableElements.size());
+        XmlNode.NodeName nodeName = XmlNode.fromXmlName("android:name");
+        for (int i = 0; i < 5; i++) {
+            XmlElement xmlElement = mergeableElements.get(i);
+            Optional<XmlAttribute> optionalName = xmlElement.getAttribute(nodeName);
+            if (!optionalName.isPresent()) {
+                continue;
+            }
+            String elementName = optionalName.get().getValue();
+            if (elementName.equals("permissionThree")) {
+                assertEquals("signature", xmlElement.getAttribute(
+                        XmlNode.fromXmlName("android:protectionLevel")).get().getValue());
+            } else {
+                if (!elementName.equals("permissionOne") && !elementName.equals("permissionTwo")
+                        && !elementName.equals("permissionFour")) {
+                    fail("Unexepected permission " + elementName);
+                }
+            }
+
+        }
     }
 }
