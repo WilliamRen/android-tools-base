@@ -26,7 +26,11 @@ import com.google.common.collect.Sets;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of ProductFlavor that is serializable. Objects used in the DSL cannot be
@@ -69,7 +73,6 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
 
         clonedFlavor.mTestPackageName = productFlavor.getTestPackageName();
         clonedFlavor.mTestInstrumentationRunner = productFlavor.getTestInstrumentationRunner();
-        clonedFlavor.mInstrumentationOptions = ImmutableMap.copyOf(productFlavor.getInstrumentationOptions());
         clonedFlavor.mTestHandleProfiling = productFlavor.getTestHandleProfiling();
         clonedFlavor.mTestFunctionalTest = productFlavor.getTestFunctionalTest();
 
