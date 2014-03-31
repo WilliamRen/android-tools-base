@@ -23,10 +23,14 @@ import com.android.builder.model.NdkConfig;
 import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SigningConfig;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The configuration of a product flavor.
@@ -53,7 +57,7 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
     private SigningConfig mSigningConfig = null;
     private Set<String> mResourceConfiguration = null;
 
-    private Map<String, String> mInstrumentationOptions = Collections.EMPTY_MAP;
+    private Map<String, String> mInstrumentationOptions = Maps.newTreeMap();;
 
     /**
      * Creates a ProductFlavor with a given name.
@@ -203,7 +207,7 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
 
     @NonNull
     public ProductFlavor setInstrumentationOptions( Map<String, String> options) {
-        mInstrumentationOptions = Collections.unmodifiableMap(options);
+        mInstrumentationOptions = Maps.newHashMap(options);
         return this;
     }
 
@@ -315,7 +319,7 @@ public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavo
 
         Map<String, String> options = new HashMap<String, String>(mInstrumentationOptions);
         options.putAll(base.mInstrumentationOptions);
-        flavor.mInstrumentationOptions = ImmutableMap.copyOf(options);
+        flavor.mInstrumentationOptions = Maps.newHashMap(options);
 
         flavor.mTestHandleProfiling = chooseBoolean(mTestHandleProfiling,
                 base.mTestHandleProfiling);
