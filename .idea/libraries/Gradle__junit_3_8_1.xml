@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: junit-3.8.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/internal/junit/junit/3.8.1/junit-3.8.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/internal/junit/junit/3.8.1/junit-3.8.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

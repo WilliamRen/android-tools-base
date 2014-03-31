@@ -19,6 +19,7 @@ import com.android.build.gradle.internal.test.report.TestReport
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.testing.SimpleTestRunner
 import com.android.builder.testing.TestRunner
+import com.android.builder.testing.api.DeviceAction
 import com.android.builder.testing.api.DeviceProvider
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
@@ -38,10 +39,11 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
 
     DeviceProvider deviceProvider
 
+    List<DeviceAction> prepareDevice = []
+    List<DeviceAction> scrubDevice = []
+
     boolean ignoreFailures
     boolean testFailed
-
-    Map<String, String> instrumentationOptions;
 
     @TaskAction
     protected void runTests() {
@@ -65,7 +67,8 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
             success = testRunner.runTests(project.name, flavor,
                     testApk, testedApk, variant.variantConfiguration,
                     deviceProvider.devices,
-                    Collections.emptyList(), Collections.emptyList(),
+                    prepareDevice,
+                    scrubDevice,
                     deviceProvider.getMaxThreads(),
                     deviceProvider.getTimeout(),
                     resultsOutDir, plugin.logger);

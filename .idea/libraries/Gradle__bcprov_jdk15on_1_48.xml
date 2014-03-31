@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: bcprov-jdk15on-1.48">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/internal/org/bouncycastle/bcprov-jdk15on/1.48/bcprov-jdk15on-1.48.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../prebuilts/tools/common/m2/internal/org/bouncycastle/bcprov-jdk15on/1.48/bcprov-jdk15on-1.48-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

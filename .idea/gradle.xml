@@ -1,3 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project version="4" />
+<project version="4">
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="distributionType" value="WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="/usr/share/java/gradle" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/asset-studio" />
+            <option value="$PROJECT_DIR$/build-system/builder" />
+            <option value="$PROJECT_DIR$/build-system/builder-model" />
+            <option value="$PROJECT_DIR$/build-system/builder-test-api" />
+            <option value="$PROJECT_DIR$/build-system/gradle" />
+            <option value="$PROJECT_DIR$/build-system/gradle-model" />
+            <option value="$PROJECT_DIR$/build-system/manifest-merger" />
+            <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/ddmlib" />
+            <option value="$PROJECT_DIR$/device_validator/dvlib" />
+            <option value="$PROJECT_DIR$/draw9patch" />
+            <option value="$PROJECT_DIR$/gradle-import" />
+            <option value="$PROJECT_DIR$/jobb" />
+            <option value="$PROJECT_DIR$/layoutlib-api" />
+            <option value="$PROJECT_DIR$/legacy/ant-tasks" />
+            <option value="$PROJECT_DIR$/legacy/archquery" />
+            <option value="$PROJECT_DIR$/lint/cli" />
+            <option value="$PROJECT_DIR$/lint/libs/lint-api" />
+            <option value="$PROJECT_DIR$/lint/libs/lint-checks" />
+            <option value="$PROJECT_DIR$/misc/screenshot2" />
+            <option value="$PROJECT_DIR$/ninepatch" />
+            <option value="$PROJECT_DIR$/rule-api" />
+            <option value="$PROJECT_DIR$/sdk-common" />
+            <option value="$PROJECT_DIR$/sdklib" />
+            <option value="$PROJECT_DIR$/testutils" />
+            <option value="$PROJECT_DIR$/../external/fat32lib" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>
 
