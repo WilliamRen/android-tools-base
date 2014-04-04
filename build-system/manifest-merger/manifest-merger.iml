@@ -13,11 +13,16 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="common" exported="" />
     <orderEntry type="module" module-name="sdklib" exported="" />
+<<<<<<< HEAD
     <orderEntry type="library" exported="" name="Gradle: kxml2-2.3.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit-3.8.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: mockito-all-1.9.5" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: _home_acsia_dev_android_source_out_host_gradle_tools_base_sdklib_classes_test" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: _home_acsia_dev_android_source_out_host_gradle_tools_base_sdklib_resources_test" level="project" />
+=======
+    <orderEntry type="module" module-name="sdk-common" exported="" />
+    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
+>>>>>>> aosp/idea133
   </component>
 </module>
 

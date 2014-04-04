@@ -23,6 +23,7 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.api.LibraryVariantImpl
 import com.android.build.gradle.internal.tasks.MergeFileTask
+import com.android.build.gradle.tasks.ExtractAnnotations
 import com.android.build.gradle.tasks.MergeResources
 import com.android.builder.BuilderConstants
 import com.android.builder.DefaultBuildType
@@ -44,6 +45,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.tooling.BuildException
 
+import static com.android.SdkConstants.FN_ANNOTATIONS_ZIP
 import static com.android.SdkConstants.LIBS_FOLDER
 import static com.android.build.gradle.BasePlugin.DIR_BUNDLES
 /**
@@ -209,6 +211,9 @@ public class LibraryVariantFactory implements VariantFactory {
                 "bundle${fullName.capitalize()}",
                 Zip)
 
+        def extract = variantData.variantDependency.annotationsPresent ? createExtractAnnotations(
+                fullName, project, variantData) : null
+
         if (buildType.runProguard) {
             // run proguard on output of compile task
             basePlugin.createProguardTasks(variantData, null)
@@ -216,7 +221,11 @@ public class LibraryVariantFactory implements VariantFactory {
             // hack since bundle can't depend on variantData.proguardTask
             mergeProGuardFileTask.dependsOn variantData.proguardTask
 
-            bundle.dependsOn packageRes, packageAidl, packageRenderscript, mergeProGuardFileTask, lintCopy, packageJniLibs
+            bundle.dependsOn packageRes, packageAidl, packageRenderscript, mergeProGuardFileTask,
+                    lintCopy, packageJniLibs
+            if (extract != null) {
+                bundle.dependsOn(extract)
+            }
         } else {
             Sync packageLocalJar = project.tasks.create(
                     "package${fullName.capitalize()}LocalJar",
@@ -251,6 +260,12 @@ public class LibraryVariantFactory implements VariantFactory {
 
             bundle.dependsOn packageRes, jar, packageAidl, packageRenderscript, packageLocalJar,
                     mergeProGuardFileTask, lintCopy, packageJniLibs
+
+            if (extract != null) {
+                // In case extract annotations strips out private typedef annotation classes
+                jar.dependsOn extract
+                bundle.dependsOn extract
+            }
         }
 
         bundle.setDescription("Assembles a bundle containing the library in ${fullName.capitalize()}.");
@@ -359,5 +374,36 @@ public class LibraryVariantFactory implements VariantFactory {
         }
 
         return configs
+    }
+
+    public Task createExtractAnnotations(
+            String fullName, Project project, BaseVariantData variantData) {
+        VariantConfiguration config = variantData.variantConfiguration
+        String dirName = config.dirName
+
+        ExtractAnnotations task = project.tasks.create(
+                "extract${fullName.capitalize()}Annotations",
+                ExtractAnnotations)
+        task.description =
+                "Extracts Android annotations for the ${fullName} variant into the archive file"
+        task.group = org.gradle.api.plugins.BasePlugin.BUILD_GROUP
+        task.plugin = basePlugin
+        task.variant = variantData
+        task.destinationDir = project.file("$project.buildDir/$DIR_BUNDLES/${dirName}")
+        task.output = new File(task.destinationDir, FN_ANNOTATIONS_ZIP)
+        task.classDir = project.file("$project.buildDir/classes/${variantData.variantConfiguration.dirName}")
+        task.source = variantData.getJavaSources()
+        task.encoding = extension.compileOptions.encoding
+        task.sourceCompatibility = extension.compileOptions.sourceCompatibility
+        task.classpath = project.files(basePlugin.getAndroidBuilder().getCompileClasspath(config))
+        task.dependsOn variantData.javaCompileTask
+
+        // Setup the boot classpath just before the task actually runs since this will
+        // force the sdk to be parsed. (Same as in compileTask)
+        task.doFirst {
+            task.bootClasspath = basePlugin.getAndroidBuilder().getBootClasspath()
+        }
+
+        return task
     }
 }

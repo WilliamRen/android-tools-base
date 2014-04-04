@@ -16,10 +16,11 @@
 
 package com.android.manifmerger;
 
+import static com.android.manifmerger.Actions.NodeRecord;
+
 import com.android.SdkConstants;
 import com.android.utils.StdLogger;
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import junit.framework.TestCase;
@@ -28,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.xml.sax.SAXException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -709,9 +709,7 @@ public class XmlElementTest extends TestCase {
                         "com.example.lib3.activityOne");
         assertTrue(activityOne.isPresent());
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        resultDocument.write(byteArrayOutputStream);
-        Logger.getAnonymousLogger().info(byteArrayOutputStream.toString());
+        Logger.getAnonymousLogger().info(resultDocument.prettyPrint());
 
 
         assertFalse(refDocument.getRootNode().getNodeByTypeAndKey(ManifestModel.NodeTypes.ACTIVITY,
@@ -766,9 +764,7 @@ public class XmlElementTest extends TestCase {
                         "com.example.lib3.activityOne");
         assertTrue(activityOne.isPresent());
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        resultDocument.write(byteArrayOutputStream);
-        Logger.getAnonymousLogger().info(byteArrayOutputStream.toString());
+        Logger.getAnonymousLogger().info(resultDocument.prettyPrint());
 
 
         assertFalse(refDocument.getRootNode().getNodeByTypeAndKey(ManifestModel.NodeTypes.ACTIVITY,
@@ -1399,14 +1395,13 @@ public class XmlElementTest extends TestCase {
                 .getAttribute(nodeName).get().getValue());
 
         // check the records.
-        ActionRecorder actionRecorder = mergingReportBuilder.getActionRecorder().build();
-        assertEquals(3, actionRecorder.getAllRecords().size());
-        ActionRecorder.DecisionTreeRecord decisionTreeRecord = actionRecorder.getAllRecords()
-                .get("activity#com.example.lib3.activityOne");
-        for (int i = 0; i < decisionTreeRecord.getNodeRecords().size(); i++) {
-            ActionRecorder.NodeRecord nodeRecord = decisionTreeRecord.getNodeRecords().get(i);
-            if ("meta-data#dog".equals(nodeRecord.getTargetId())) {
-                assertEquals(ActionRecorder.ActionType.REJECTED,
+        Actions actionRecorder = mergingReportBuilder.getActionRecorder().build();
+        assertEquals(3, actionRecorder.getNodeKeys().size());
+        ImmutableList<NodeRecord> nodeRecords = actionRecorder.getNodeRecords(
+                new XmlNode.NodeKey("activity#com.example.lib3.activityOne"));
+        for (NodeRecord nodeRecord : nodeRecords) {
+            if ("meta-data#dog".equals(nodeRecord.getTargetId().toString())) {
+                assertEquals(Actions.ActionType.REJECTED,
                         nodeRecord.getActionType());
                 return;
             }

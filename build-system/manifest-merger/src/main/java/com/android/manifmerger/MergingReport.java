@@ -35,18 +35,18 @@ public class MergingReport {
     // list of logging events, ordered by their recording time.
     private final ImmutableList<Record> mRecords;
     private final ImmutableList<String> mIntermediaryStages;
-    private final ActionRecorder mActionRecorder;
+    private final Actions mActions;
 
     private MergingReport(Optional<XmlDocument> mergedDocument,
             @NonNull Result result,
             @NonNull ImmutableList<Record> records,
             @NonNull ImmutableList<String> intermediaryStages,
-            @NonNull ActionRecorder actionRecorder) {
+            @NonNull Actions actions) {
         mMergedDocument = mergedDocument;
         mResult = result;
         mRecords = records;
         mIntermediaryStages = intermediaryStages;
-        mActionRecorder = actionRecorder;
+        mActions = actions;
     }
 
     /**
@@ -68,7 +68,7 @@ public class MergingReport {
                     logger.error(null /* throwable */, "Unhandled record type " + record.mSeverity);
             }
         }
-        mActionRecorder.log(logger);
+        mActions.log(logger);
     }
 
     /**
@@ -95,7 +95,19 @@ public class MergingReport {
 
         WARNING,
 
-        ERROR
+        ERROR;
+
+        public boolean isSuccess() {
+            return this == SUCCESS || this == WARNING;
+        }
+
+        public boolean isWarning() {
+            return this == WARNING;
+        }
+
+        public boolean isError() {
+            return this == ERROR;
+        }
     }
 
     @NonNull
@@ -109,8 +121,26 @@ public class MergingReport {
     }
 
     @NonNull
-    public ActionRecorder getActionRecorder() {
-        return mActionRecorder;
+    public Actions getActions() {
+        return mActions;
+    }
+
+    @NonNull
+    public String getReportString() {
+        switch (mResult) {
+            case SUCCESS:
+                return "Manifest merger executed successfully";
+            case WARNING:
+                return mRecords.size() > 1
+                        ? "Manifest merger exited with warnings, see logs"
+                        : "Manifest merger warning : " + mRecords.get(0).mLog;
+            case ERROR:
+                return mRecords.size() > 1
+                        ? "Manifest merger failed with multiple errors, see logs"
+                        : "Manifest merger failed : " + mRecords.get(0).mLog;
+            default:
+                return "Manifest merger returned an invalid result " + mResult;
+        }
     }
 
     /**
@@ -156,7 +186,7 @@ public class MergingReport {
         private ImmutableList.Builder<String> mIntermediaryStages = new ImmutableList.Builder<String>();
         private boolean mHasWarnings = false;
         private boolean mHasErrors = false;
-        private ActionRecorder.Builder mActionRecorder = new ActionRecorder.Builder();
+        private ActionRecorder mActionRecorder = new ActionRecorder();
         private final ILogger mLogger;
 
         Builder(ILogger logger) {
@@ -198,7 +228,7 @@ public class MergingReport {
             return mHasErrors;
         }
 
-        ActionRecorder.Builder getActionRecorder() {
+        ActionRecorder getActionRecorder() {
             return mActionRecorder;
         }
 

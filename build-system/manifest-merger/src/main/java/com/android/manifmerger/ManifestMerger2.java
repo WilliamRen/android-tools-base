@@ -24,6 +24,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.concurrency.Immutable;
 import com.android.utils.ILogger;
+import com.android.utils.Pair;
 import com.android.utils.SdkUtils;
 import com.android.utils.XmlUtils;
 import com.google.common.base.Optional;
@@ -35,8 +36,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,7 +47,7 @@ import java.util.Map;
 public class ManifestMerger2 {
 
     private final File mMainManifestFile;
-    private final ImmutableList<File> mLibraryFiles;
+    private final ImmutableList<Pair<String, File>> mLibraryFiles;
     private final ImmutableList<File> mFlavorsAndBuildTypeFiles;
     private final ImmutableList<Invoker.Feature> mOptionalFeatures;
     private final KeyBasedValueResolver<String> mPlaceHolderValueResolver;
@@ -56,7 +57,7 @@ public class ManifestMerger2 {
     private ManifestMerger2(
             @NonNull ILogger logger,
             @NonNull File mainManifestFile,
-            @NonNull ImmutableList<File> libraryFiles,
+            @NonNull ImmutableList<Pair<String, File>> libraryFiles,
             @NonNull ImmutableList<File> flavorsAndBuildTypeFiles,
             @NonNull ImmutableList<Invoker.Feature> optionalFeatures,
             @NonNull KeyBasedValueResolver<String> placeHolderValueResolver,
@@ -87,19 +88,24 @@ public class ManifestMerger2 {
         Optional<XmlDocument> xmlDocumentOptional = Optional.absent();
         for (File inputFile : mFlavorsAndBuildTypeFiles) {
             mLogger.info("Merging flavors and build manifest %s \n", inputFile.getPath());
-            xmlDocumentOptional = merge(xmlDocumentOptional, inputFile, mergingReportBuilder);
+            xmlDocumentOptional = merge(xmlDocumentOptional,
+                    Pair.of((String) null, inputFile),
+                    mergingReportBuilder);
             if (!xmlDocumentOptional.isPresent()) {
                 return mergingReportBuilder.build();
             }
         }
         mLogger.info("Merging main manifest %s\n", mMainManifestFile.getPath());
-        xmlDocumentOptional = merge(xmlDocumentOptional, mMainManifestFile, mergingReportBuilder);
+        xmlDocumentOptional = merge(xmlDocumentOptional, Pair.of(mMainManifestFile.getName(),
+                mMainManifestFile),
+                mergingReportBuilder);
         if (!xmlDocumentOptional.isPresent()) {
             return mergingReportBuilder.build();
         }
-        for (File inputFile : mLibraryFiles) {
-            mLogger.info("Merging library manifest " + inputFile.getPath());
-            xmlDocumentOptional = merge(xmlDocumentOptional, inputFile, mergingReportBuilder);
+        for (Pair<String, File> inputFile : mLibraryFiles) {
+            mLogger.info("Merging library manifest " + inputFile.getSecond().getPath());
+            xmlDocumentOptional = merge(
+                    xmlDocumentOptional, inputFile, mergingReportBuilder);
             if (!xmlDocumentOptional.isPresent()) {
                 return mergingReportBuilder.build();
             }
@@ -144,7 +150,7 @@ public class ManifestMerger2 {
     // merge the optionally existing xmlDocument with a lower priority xml file.
     private Optional<XmlDocument> merge(
             Optional<XmlDocument> xmlDocument,
-            File lowerPriorityXmlFile,
+            Pair<String, File> lowerPriorityXmlFile,
             MergingReport.Builder mergingReportBuilder) throws MergeFailureException {
 
         XmlDocument lowerPriorityDocument;
@@ -159,16 +165,19 @@ public class ManifestMerger2 {
             mergingReportBuilder.addError("Validation failed, exiting");
             return Optional.absent();
         }
-        Optional<XmlDocument> result = xmlDocument.isPresent()
-                ? xmlDocument.get().merge(lowerPriorityDocument, mergingReportBuilder)
-                : Optional.of(lowerPriorityDocument);
+        Optional<XmlDocument> result;
+        if (xmlDocument.isPresent()) {
+            result = xmlDocument.get().merge(lowerPriorityDocument, mergingReportBuilder);
+        } else {
+            mergingReportBuilder.getActionRecorder().recordDefaultNodeAction(
+                    lowerPriorityDocument.getRootNode());
+            result = Optional.of(lowerPriorityDocument);
+        }
 
         // if requested, dump each intermediary merging stage into the report.
         if (mOptionalFeatures.contains(Invoker.Feature.KEEP_INTERMEDIARY_STAGES)
                 && result.isPresent()) {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            result.get().write(byteArrayOutputStream);
-            mergingReportBuilder.addMergingStage(byteArrayOutputStream.toString());
+            mergingReportBuilder.addMergingStage(result.get().prettyPrint());
         }
 
         return result;
@@ -357,8 +366,8 @@ public class ManifestMerger2 {
         }
 
         private final File mMainManifestFile;
-        private final ImmutableList.Builder<File> mLibraryFilesBuilder =
-                new ImmutableList.Builder<File>();
+        private final ImmutableList.Builder<Pair<String, File>> mLibraryFilesBuilder =
+                new ImmutableList.Builder<Pair<String, File>>();
         private final ImmutableList.Builder<File> mFlavorsAndBuildTypeFiles =
                 new ImmutableList.Builder<File>();
         private final ImmutableList.Builder<Feature> mFeaturesBuilder =
@@ -387,7 +396,12 @@ public class ManifestMerger2 {
          * @return itself.
          */
         public Invoker addLibraryManifest(File file) {
-            mLibraryFilesBuilder.add(file);
+            mLibraryFilesBuilder.add(Pair.of(file.getName(), file));
+            return this;
+        }
+
+        public Invoker addLibraryManifests(List<Pair<String, File>> namesAndFiles) {
+            mLibraryFilesBuilder.addAll(namesAndFiles);
             return this;
         }
 
@@ -399,7 +413,9 @@ public class ManifestMerger2 {
          * @return itself.
          */
         public Invoker addLibraryManifests(File... files) {
-            mLibraryFilesBuilder.add(files);
+            for (File file : files) {
+                addLibraryManifest(file);
+            }
             return this;
         }
 
@@ -467,6 +483,12 @@ public class ManifestMerger2 {
          */
         public MergingReport merge() throws MergeFailureException {
 
+            // provide some free placeholders values.
+            ImmutableMap<SystemProperty, String> systemProperties = mSystemProperties.build();
+            if (systemProperties.containsKey(SystemProperty.PACKAGE)) {
+                mPlaceHolders.put("packageName", systemProperties.get(SystemProperty.PACKAGE));
+            }
+
             ManifestMerger2 manifestMerger =
                     new ManifestMerger2(
                             mLogger,
@@ -476,7 +498,7 @@ public class ManifestMerger2 {
                             mFeaturesBuilder.build(),
                             new MapBasedKeyBasedValueResolver<String>(mPlaceHolders.build()),
                             new MapBasedKeyBasedValueResolver<SystemProperty>(
-                                    mSystemProperties.build()));
+                                    systemProperties));
             return manifestMerger.merge();
         }
     }

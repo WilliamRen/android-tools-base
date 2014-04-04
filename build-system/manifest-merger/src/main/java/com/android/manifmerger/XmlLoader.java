@@ -16,9 +16,14 @@
 
 package com.android.manifmerger;
 
+import com.android.annotations.Nullable;
+import com.android.utils.Pair;
 import com.android.utils.PositionXmlParser;
+import com.google.common.base.Strings;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
@@ -48,6 +53,8 @@ public final class XmlLoader {
          * @return the human and machine readable source location.
          */
         String print(boolean shortFormat);
+
+        Node toXml(Document document);
     }
 
     private XmlLoader() {}
@@ -68,10 +75,24 @@ public final class XmlLoader {
         Document domDocument = positionXmlParser.parse(inputStream);
         return domDocument != null
                 ? new XmlDocument(positionXmlParser,
-                        new FileSourceLocation(xmlFile),
+                        new FileSourceLocation(null /* name */, xmlFile),
                         domDocument.getDocumentElement())
                 : null;
     }
+
+    public static XmlDocument load(Pair<String, File> xmlFile)
+            throws IOException, SAXException, ParserConfigurationException {
+        InputStream inputStream = new BufferedInputStream(new FileInputStream(xmlFile.getSecond()));
+
+        PositionXmlParser positionXmlParser = new PositionXmlParser();
+        Document domDocument = positionXmlParser.parse(inputStream);
+        return domDocument != null
+                ? new XmlDocument(positionXmlParser,
+                new FileSourceLocation(xmlFile.getFirst(), xmlFile.getSecond()),
+                domDocument.getDocumentElement())
+                : null;
+    }
+
 
     /**
      * Loads a xml document from its {@link String} representation without doing xml validation and
@@ -99,14 +120,26 @@ public final class XmlLoader {
     private static class FileSourceLocation implements SourceLocation {
 
         private final File mFile;
+        private final String mName;
 
-        private FileSourceLocation(File file) {
+        private FileSourceLocation(@Nullable String name, File file) {
             this.mFile = file;
+            mName = Strings.isNullOrEmpty(name)
+                    ? file.getName()
+                    : name;
         }
 
         @Override
         public String print(boolean shortFormat) {
-            return "file:" + (shortFormat ? mFile.getName() : mFile.getPath());
+            return "file:" + (shortFormat ? mName : mName + ":" + mFile.getPath());
+        }
+
+        @Override
+        public Node toXml(Document document) {
+            Element location = document.createElement("source");
+            location.setAttribute("scheme", "file://");
+            location.setAttribute("value", mFile.getAbsolutePath());
+            return location;
         }
     }
 }

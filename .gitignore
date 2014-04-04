@@ -16,3 +16,5 @@ misc/distrib_plugins/buildSrc/build
 misc/distrib_plugins/buildSrc/out
 misc/distrib_plugins/buildSrc/buildSrc.i*
 build-system/.idea/
+.gitignore
+.idea/libraries/
