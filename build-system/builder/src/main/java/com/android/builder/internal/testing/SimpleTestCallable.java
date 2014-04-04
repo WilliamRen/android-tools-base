@@ -19,6 +19,7 @@ package com.android.builder.internal.testing;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.testing.TestData;
+import com.android.builder.testing.api.DeviceAction;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.DeviceException;
 import com.android.ddmlib.testrunner.ITestRunListener;
@@ -30,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -53,6 +55,11 @@ public class SimpleTestCallable implements Callable<Boolean> {
     private final File testApk;
     @Nullable
     private final File testedApk;
+    @NonNull
+    private final List<DeviceAction> prepareDeviceActions;
+    @NonNull
+    private final List<DeviceAction> scrubDeviceAction;
+
     private final int timeout;
     @NonNull
     private final ILogger logger;
@@ -65,6 +72,8 @@ public class SimpleTestCallable implements Callable<Boolean> {
             @Nullable File testedApk,
             @NonNull  TestData testData,
             @NonNull  File resultsDir,
+            @NonNull  List<DeviceAction> prepareDevice,
+            @NonNull  List<DeviceAction> scrubDevice,
                       int timeout,
             @NonNull  ILogger logger) {
         this.projectName = projectName;
@@ -74,6 +83,8 @@ public class SimpleTestCallable implements Callable<Boolean> {
         this.testApk = testApk;
         this.testedApk = testedApk;
         this.testData = testData;
+        this.prepareDeviceActions = Collections.unmodifiableList(prepareDevice);
+        this.scrubDeviceAction = Collections.unmodifiableList(scrubDevice);
         this.timeout = timeout;
         this.logger = logger;
     }
@@ -101,6 +112,10 @@ public class SimpleTestCallable implements Callable<Boolean> {
             device.installPackage(testApk, timeout, logger);
             isInstalled = true;
 
+            for (DeviceAction action : prepareDeviceActions) {
+                action.apply(device);
+            }
+
             RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
                     testData.getPackageName(),
                     testData.getInstrumentationRunner(),
@@ -109,7 +124,15 @@ public class SimpleTestCallable implements Callable<Boolean> {
             runner.setRunName(deviceName);
             runner.setMaxtimeToOutputResponse(timeout);
 
+            for (Map.Entry<String, String> kv : testData.getInstrumentationOptions().entrySet()) {
+                runner.addInstrumentationArg(kv.getKey(), kv.getValue());
+            }
+
             runner.run(runListener);
+
+            for (DeviceAction action : scrubDeviceAction) {
+                action.apply(device);
+            }
 
             return runListener.getRunResult().hasFailedTests();
         } catch (Exception e) {

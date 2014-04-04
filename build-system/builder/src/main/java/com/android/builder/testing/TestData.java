@@ -19,6 +19,7 @@ package com.android.builder.testing;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -43,6 +44,9 @@ public interface TestData {
 
     @NonNull
     String getInstrumentationRunner();
+
+    @NonNull
+    Map<String, String> getInstrumentationOptions();
 
     @NonNull
     Boolean getHandleProfiling();

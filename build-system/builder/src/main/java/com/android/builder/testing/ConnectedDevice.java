@@ -23,6 +23,7 @@ import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.SyncException;
 import com.android.ddmlib.TimeoutException;
 import com.android.utils.ILogger;
 import com.google.common.collect.Lists;
@@ -146,4 +147,15 @@ public class ConnectedDevice extends DeviceConnector {
     public int getWidth() {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public void pullFile(String remote, String local)
+            throws IOException {
+        try {
+            iDevice.pullFile(remote, local);
+        } catch (Exception e) {
+            throw  new IOException(e);
+        }
+    }
+
 }

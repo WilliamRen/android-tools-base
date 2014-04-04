@@ -17,10 +17,11 @@
 package com.android.builder;
 
 import com.android.builder.model.ProductFlavor;
-
-import junit.framework.TestCase;
+import com.google.common.collect.ImmutableMap;
 
 import java.util.Collection;
+
+import junit.framework.TestCase;
 
 public class DefaultProductFlavorTest extends TestCase {
 
@@ -43,6 +44,7 @@ public class DefaultProductFlavorTest extends TestCase {
         mCustom.setPackageName("com.forty.two");
         mCustom.setTestPackageName("com.forty.two.test");
         mCustom.setTestInstrumentationRunner("com.forty.two.test.Runner");
+        mCustom.setInstrumentationOptions(ImmutableMap.of("a", "a", "b", "b", "c", "c"));
         mCustom.setTestHandleProfiling(true);
         mCustom.setTestFunctionalTest(true);
         mCustom.addResourceConfiguration("hdpi");
@@ -77,6 +79,7 @@ public class DefaultProductFlavorTest extends TestCase {
         assertEquals("com.forty.two", flavor.getPackageName());
         assertEquals("com.forty.two.test", flavor.getTestPackageName());
         assertEquals("com.forty.two.test.Runner", flavor.getTestInstrumentationRunner());
+        assertNotNull(flavor.getInstrumentationOptions());
         assertEquals(Boolean.TRUE, flavor.getTestHandleProfiling());
         assertEquals(Boolean.TRUE, flavor.getTestFunctionalTest());
     }

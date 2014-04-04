@@ -865,6 +865,17 @@ public class VariantConfiguration implements TestData {
         return runner != null ? runner : DEFAULT_TEST_RUNNER;
     }
 
+    @Override
+    @NonNull
+    public Map<String, String> getInstrumentationOptions() {
+        VariantConfiguration config = this;
+        if (mType == Type.TEST) {
+            config = getTestedConfig();
+        }
+        Map<String, String> options = config.mMergedFlavor.getInstrumentationOptions();
+        return options != null ? options : Collections.EMPTY_MAP;
+    }
+
     /**
      * Returns handleProfiling value to use to test this variant, or if the
      * variant is a test, the one to use to test the tested variant.

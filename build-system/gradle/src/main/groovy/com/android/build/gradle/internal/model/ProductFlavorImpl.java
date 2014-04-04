@@ -21,6 +21,7 @@ import com.android.annotations.Nullable;
 import com.android.builder.model.ClassField;
 import com.android.builder.model.NdkConfig;
 import com.android.builder.model.ProductFlavor;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import java.io.File;
@@ -49,6 +50,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
     private String mPackageName = null;
     private String mTestPackageName = null;
     private String mTestInstrumentationRunner = null;
+    private Map<String, String> mInstrumentationOptions = Collections.EMPTY_MAP;
     private Boolean mTestHandleProfiling = null;
     private Boolean mTestFunctionalTest = null;
     private Set<String> mResourceConfigurations = null;
@@ -142,6 +144,10 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
     public String getTestInstrumentationRunner() {
         return mTestInstrumentationRunner;
     }
+
+    @NonNull
+    @Override
+    public Map<String, String> getInstrumentationOptions() { return mInstrumentationOptions; }
 
     @Nullable
     @Override

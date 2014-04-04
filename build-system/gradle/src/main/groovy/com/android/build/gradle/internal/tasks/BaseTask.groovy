@@ -16,6 +16,7 @@
 package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.BasePlugin
 import com.android.builder.AndroidBuilder
+import com.android.builder.testing.api.DeviceAction
 import org.gradle.api.DefaultTask
 
 public abstract class BaseTask extends DefaultTask {
@@ -25,6 +26,15 @@ public abstract class BaseTask extends DefaultTask {
     protected AndroidBuilder getBuilder() {
         return plugin.getAndroidBuilder()
     }
+
+    public org.gradle.api.Task prepareDevice(DeviceAction action) {
+
+    }
+
+    public org.gradle.api.Task scrubDevice(DeviceAction action) {
+
+    }
+
 
     protected static void emptyFolder(File folder) {
         folder.deleteDir()
